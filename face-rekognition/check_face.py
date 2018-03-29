@@ -15,6 +15,7 @@ rekognition = boto3.client('rekognition')
 def lambda_handler(event, context):
     jst = datetime.datetime.now()
     now = jst.strftime("%Y-%m-%d %H:%M:%S")
+    bucket_name = 'mitsu-face-check'
 
     images_bucket = event['Records'][0]['s3']['bucket']['name']
     images_key = urllib.unquote_plus(event['Records'][0]['s3']['object']['key'].encode('utf8'))
@@ -41,7 +42,7 @@ def lambda_handler(event, context):
 	})
 
     result_folder = 'result/person/' + images_key.rsplit('/', 1)[1].rsplit('.', 1)[0]
-    results_bucket = s3.Bucket('mitsu-face-check')
+    results_bucket = s3.Bucket(bucket_name)
     s3_response = results_bucket.put_object( \
         ACL='private', \
         Body=label_records, \
@@ -84,12 +85,14 @@ def lambda_handler(event, context):
 	})
 
     result_folder = 'result/face/' + images_key.rsplit('/', 1)[1].rsplit('.', 1)[0]
-    results_bucket = s3.Bucket('mitsu-face-check')
+    results_bucket = s3.Bucket(bucket_name)
     s3_response_face = results_bucket.put_object( \
         ACL='private', \
         Body=face_records, \
         Key=result_folder + "_face.csv", \
         ContentType='text/plain' \
     )
+
+    boto3.client('s3').delete_object(Bucket=bucket_name, Key=images_key)
 
     return str(s3_response), str(s3_response_face)
