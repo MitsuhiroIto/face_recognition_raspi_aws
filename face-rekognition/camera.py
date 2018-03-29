@@ -12,6 +12,6 @@ while True:
     ret, frame = cap.read()
     image_url =  'image/' + now + ".jpg"
     cv2.imwrite(image_url, frame)
-    resource_s3.Bucket('mitsu-face-rekognition').upload_file(image_url, image_url)
+    resource_s3.Bucket('mitsu-face-check').upload_file(image_url, image_url)
     time.sleep(10)
     os.remove(image_url)
